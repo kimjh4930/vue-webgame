@@ -25,62 +25,63 @@ const getNumbers = () =>{
         const chosen = candidates.splice(Math.floor(Math.random() * (9-i)), 1)[0];
         array.push(chosen);
     }
-
-    console.log("array : " + array);
-
     return array;
 };
-
-const check = (answer, value) => {
-    const board = [false, false, false, false];
-    var strike = 0;
-    var ball = 0;
-
-    for(var i=0 ; i<4; i++){
-        if(parseInt(value[i]) === parseInt(answer[i])){
-            strike++;
-            board[i] = true;
-        }
-    }
-
-    for(var i=0; i<4; i++){
-        console.log(answer.includes(value[i]));
-        if(answer.includes(parseInt(value[i])) && board[i] === false){
-            ball++;
-        }
-    }
-
-    const result = strike + ' Strike, ' + ball + ' Ball';
-    console.log(result);
-
-    return result;
-}
 
 export default {
     data() {
         return {
-            answer: getNumbers(),
-            value: '',
-            result: '',
-            tries: []
+            answer: getNumbers(),   // ex) [1, 2, 3, 4]
+            tries: [],              // 시도 횟수
+            value: '',              // 입력값
+            result: ''              // 결과
         }
     },
     methods: {
         onSubmitForm(e){
-            console.log(this.value);
-
-            this.tries.push({
-                try : this.value,
-                result: check(this.answer, this.value)
-            });
-
-            if(this.tries.length >= 10){
-                this.tries = [];
+            //정답
+            if(this.value === this.answer.join('')){
+                this.tries.push ({
+                    try: this.value,
+                    result: '홈런'
+                });
+                this.result = '홈런';
+                this.value = '';
                 this.answer = getNumbers();
+                this.tries = [];
+                this.$refs.answer.focus();
+
+            }else { //오답
+                if(this.tries.length >= 9){
+                    this.result = `10번 넘게 틀려서 실패! 답은 ${this.answer.join(',')} 이었습니다.`;
+                    alert('게임을 다시 시작합니다.');
+                    this.value = '';
+                    this.result = '';
+                    this.answer = getNumbers();
+                    this.tries = [];
+                    this.$refs.answer.focus();
+                }
+
+                let strike = 0;
+                let ball = 0;
+                const answerArray = this.value.split('').map(v => parseInt(v));
+                
+                for(let i=0; i<4; i++){
+                    if(answerArray[i] === this.answer[i]){
+                        strike++;
+                    }else if(this.answer.includes(answerArray[i])){
+                        ball++;
+                    }
+                }
+
+                this.tries.push({
+                    try : this.value,
+                    result: `${strike} Strike, ${ball} ball`
+                });
+
+                this.value = '';
+                this.$refs.answer.focus();
             }
-            
-            this.$refs.answer.focus();
-            this.value = '';
         }
     },
 }
